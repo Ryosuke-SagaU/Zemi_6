@@ -11,12 +11,12 @@ public class Zemi {
 
     float mwf = 2.0f;
 
-    float tlme_high;
-    float tlme_low;
-    float tlme_mid;
-    float tlmc_high;
-    float tlmc_low;
-    float tlmc_mid;
+    double tlme_high;
+    double tlme_low;
+    double tlme_mid;
+    double tlmc_high;
+    double tlmc_low;
+    double tlmc_mid;
 
     double te_high;
     double te_low;
@@ -26,46 +26,91 @@ public class Zemi {
     double tc_low;
     double tc_mid;
 
-    public float calculateWwso(float[] num1, float[] num2, int target) {
+    double fx_wso_high;
+    double fx_wso_low;
+    double fx_wso_mid;
 
-        int len1 = num1.length - 1;
+    double fx_cso_high;
+    double fx_cso_low;
+    double fx_cso_mid;
 
-        for (int i = 0; i < num1.length; i++){
+    double qin_high;
+    double qin_low;
+    double qin_mid;
 
-            float qws_high = m * cp *  (twsi - num1[len1]);
-            float qws_low = m * cp *  (twsi - num1[i]);
+    double qout_high;
+    double qout_low;
+    double qout_mid;
 
-            float mid = (num1[i] + num1[len1]) / 2;
-            float qws_mid = m * cp * (twsi - mid);
+    // 蒸発器
+    double h1;
+    double h4;
 
-            tlme_high = qws_high / ua;
-            tlme_low = qws_low / ua;
-            tlme_mid = qws_mid / ua;
+    // 凝縮器
+    double h2;
+    double h3;
 
-            te_high = (num1[len1] * Math.exp((twsi-num1[len1])/tlme_high) - twsi) / (Math.exp((twsi-num1[len1])/tlme_high) - 1);
-            te_low= (num1[len1] * Math.exp((twsi-num1[i])/tlme_low) - twsi) / (Math.exp((twsi-num1[len1])/tlme_low) - 1);
-            te_mid = (mid * Math.exp((twsi-mid)/tlme_mid) - twsi) / (Math.exp((twsi-mid)/tlme_mid) - 1);
+    public void calculateWwso(double l_wso, double h_wso, double target) {
+
+        double qws_high = m * cp *  (twsi - h_wso);
+        double qws_low = m * cp *  (twsi - l_wso);
+
+        double mid = (l_wso + h_wso) / 2;
+        double qws_mid = m * cp * (twsi - mid);
+
+        tlme_high = qws_high / ua;
+        tlme_low = qws_low / ua;
+        tlme_mid = qws_mid / ua;
+
+        te_high = (h_wso * Math.exp((twsi - h_wso)/tlme_high) - twsi) / (Math.exp((twsi - h_wso)/tlme_high) - 1);
+        te_low= (l_wso * Math.exp((twsi - l_wso)/tlme_low) - twsi) / (Math.exp((twsi - l_wso)/tlme_low) - 1);
+        te_mid = (mid * Math.exp((twsi - mid)/tlme_mid) - twsi) / (Math.exp((twsi - mid)/tlme_mid) - 1);
+
+        System.out.println(te_high);
+        System.out.println(te_low);
+        System.out.println(te_mid);
+
+        // TODO () 内を、Qinで割ってあげる
+        fx_wso_high = 1 - (qws_high);
+        fx_wso_low = 1 - (qws_low);
+        fx_wso_mid = 1 - (qws_mid);
+
+        if (fx_wso_low > target || fx_wso_high < target) {
+            System.out.println("can't be calculated");
+        } else if (fx_wso_mid <= target) {
+            System.out.println("good calculation");
         }
+    }
 
-        int len2 = num2.length - 1;
+    public void calculateWcso(double l_cso, double h_cso, double target) {
 
-        for (int i = 0; i < num2.length; i++){
+        double qcs_high = m * cp * (h_cso - tcsi);
+        double qcs_low = m * cp * (l_cso - tcsi);
 
-            float qcs_high = m * cp * (num2[len2] - tcsi);
-            float qcs_low = m * cp * (num2[0] - tcsi);
+        double mid = (l_cso + h_cso) / 2;
+        double qcs_mid = m * cp * (mid - tcsi);
 
-            float mid = (num2[i] + num2[len2]) / 2;
-            float qcs_mid = m * cp * (mid - tcsi);
+        tlmc_high = qcs_high / ua;
+        tlmc_low = qcs_low / ua;
+        tlmc_mid = qcs_mid / ua;
 
-            tlmc_high = qcs_high / ua;
-            tlmc_low = qcs_low / ua;
-            tlmc_mid = qcs_mid / ua;
+        tc_high = (h_cso * Math.exp((h_cso - tcsi) / tlmc_high) - tcsi) / (Math.exp((h_cso - tcsi) / tlmc_high) - 1);
+        tc_low = (l_cso * Math.exp((l_cso - tcsi) / tlmc_low) - tcsi) / (Math.exp((l_cso - tcsi) / tlmc_low) - 1);
+        tc_mid = (mid * Math.exp((mid - tcsi) / tlmc_mid) - tcsi) / (Math.exp((mid - tcsi) / tlmc_mid) - 1);
 
-            tc_high = (num2[len2] * Math.exp((num2[len2] - tcsi) / tlmc_high) - tcsi) / (Math.exp((num2[len2] - tcsi) / tlmc_high) - 1);
-            tc_low = (num2[i] * Math.exp((num2[i] - tcsi) / tlmc_low) - tcsi) / (Math.exp((num2[i] - tcsi) / tlmc_low) - 1);
-            tc_mid = (mid * Math.exp((mid - tcsi) / tlmc_mid) - tcsi) / (Math.exp((mid - tcsi) / tlmc_mid) - 1);
+        System.out.println(tc_high);
+        System.out.println(tc_low);
+        System.out.println(tc_mid);
+
+        // TODO () 内を、Qoutで割ってあげる
+        fx_cso_high = 1 - (qcs_high);
+        fx_cso_low = 1 - (qcs_low);
+        fx_cso_mid = 1 - (qcs_mid);
+
+        if (fx_cso_low > target || fx_cso_high < target) {
+            System.out.println("can't be calculated");
+        } else if (fx_wso_mid <= target) {
+            System.out.println("good calculation");
         }
-
-        return 0f;
     }
 }

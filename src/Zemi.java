@@ -2,12 +2,12 @@
 public class Zemi {
 
     int m = 100;
-    float cp = 4.2f;
+    float cp = 4200f;
 
-    float twsi = 30;
-    float tcsi = 4;
+    float twsi = 30f;
+    float tcsi = 4f;
 
-    int ua = 5000;
+    int ua = 5000000;
 
     float mwf = 2.0f;
 
@@ -43,12 +43,24 @@ public class Zemi {
     double qout_mid;
 
     // 蒸発器
-    double h1;
-    double h4;
+    double h1_high = 512521.9;
+    double h4_high = -692378.8;
+
+    double h1_low = 510818.8;
+    double h4_low = -692452.8;
+
+    double h1_mid = 511679.6;
+    double h4_mid = -692416.2;
 
     // 凝縮器
-    double h2;
-    double h3;
+    double h2_high = 449011.5;
+    double h3_high = -732315.6;
+
+    double h2_low = 454827.4;
+    double h3_low = -732315.6;
+
+    double h2_mid = 451868.7;
+    double h3_mid = -732315.6;
 
     public void calculateWwso(double l_wso, double h_wso, double target) {
 
@@ -58,26 +70,38 @@ public class Zemi {
         double mid = (l_wso + h_wso) / 2;
         double qws_mid = m * cp * (twsi - mid);
 
+        System.out.println(qws_high);
+        System.out.println(qws_low);
+        System.out.println(qws_mid);
+
         tlme_high = qws_high / ua;
         tlme_low = qws_low / ua;
         tlme_mid = qws_mid / ua;
 
         te_high = (h_wso * Math.exp((twsi - h_wso)/tlme_high) - twsi) / (Math.exp((twsi - h_wso)/tlme_high) - 1);
-        te_low= (l_wso * Math.exp((twsi - l_wso)/tlme_low) - twsi) / (Math.exp((twsi - l_wso)/tlme_low) - 1);
+        te_low = (l_wso * Math.exp((twsi - l_wso)/tlme_low) - twsi) / (Math.exp((twsi - l_wso)/tlme_low) - 1);
         te_mid = (mid * Math.exp((twsi - mid)/tlme_mid) - twsi) / (Math.exp((twsi - mid)/tlme_mid) - 1);
 
         System.out.println(te_high);
         System.out.println(te_low);
         System.out.println(te_mid);
 
+        qin_high = mwf * (h1_high - h4_high);
+        qin_low = mwf * (h1_low - h4_low);
+        qin_mid = mwf * (h1_mid - h4_mid);
+
         // TODO () 内を、Qinで割ってあげる
-        fx_wso_high = 1 - (qws_high);
-        fx_wso_low = 1 - (qws_low);
-        fx_wso_mid = 1 - (qws_mid);
+        fx_wso_high = 1 - (qws_high / qin_high);
+        fx_wso_low = 1 - (qws_low / qin_low);
+        fx_wso_mid = 1 - (qws_mid / qin_mid);
+
+        System.out.println(Math.abs(fx_wso_high));
+        System.out.println(Math.abs(fx_wso_low));
+        System.out.println(Math.abs(fx_wso_mid));
 
         if (fx_wso_low > target || fx_wso_high < target) {
             System.out.println("can't be calculated");
-        } else if (fx_wso_mid <= target) {
+        } else if (Math.abs(fx_wso_mid) <= target) {
             System.out.println("good calculation");
         }
     }
